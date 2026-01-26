@@ -398,17 +398,30 @@
     //  FUNGSI FETCH GOOGLE SHEETS
     // ===========================================================
     function fetchSheet(sheetName) {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&headers=1`;
         return fetch(url)
             .then(res => res.text())
             .then(text => {
                 // Google returns: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
                 const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
-                const cols = json.table.cols.map(c => c.label.toLowerCase().trim());
-                const rows = json.table.rows.map(r => {
+                let cols = json.table.cols.map(c => c.label.toLowerCase().trim());
+                let dataRows = json.table.rows;
+
+                // Fallback: if cols labels are empty, use first row as headers
+                if (cols.every(c => c === '') && dataRows.length > 0) {
+                    cols = dataRows[0].c.map(cell => cell ? String(cell.v || '').toLowerCase().trim() : '');
+                    dataRows = dataRows.slice(1);
+                }
+
+                const rows = dataRows.map(r => {
                     const obj = {};
                     r.c.forEach((cell, i) => {
-                        obj[cols[i]] = cell ? (cell.v !== null ? cell.v : '') : '';
+                        if (i < cols.length && cols[i]) {
+                            // Prefer formatted value (f) to preserve text like "3+", ">95%"
+                            obj[cols[i]] = cell
+                                ? (cell.f != null ? String(cell.f) : (cell.v != null ? String(cell.v) : ''))
+                                : '';
+                        }
                     });
                     return obj;
                 });
