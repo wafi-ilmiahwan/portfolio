@@ -1282,51 +1282,56 @@
 
         @media (max-width: 768px) {
             .nav-links {
+                display: flex;
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100vh;
+                background: white;
+                box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: flex-start;
+                padding: 100px 30px 40px;
+                gap: 10px;
+                z-index: 999;
+                transition: right 0.3s ease;
+            }
+            .nav-links.active {
+                right: 0;
+            }
+            .nav-toggle {
+                display: flex;
+            }
+            .nav-links a {
+                font-size: 18px;
+                font-weight: 600;
+                padding: 15px 20px;
+                width: 100%;
+                border-radius: 12px;
+                transition: background 0.3s;
+            }
+            .nav-links a:hover {
+                background: rgba(102, 126, 234, 0.1);
+            }
+            .nav-links li {
+                width: 100%;
+            }
+            /* Overlay background */
+            .nav-overlay {
                 display: none;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 40px;
-                z-index: 999;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s, visibility 0.3s;
+                background: rgba(0,0,0,0.3);
+                z-index: 998;
             }
-            .nav-links.active {
-                display: flex;
-                opacity: 1;
-                visibility: visible;
+            .nav-overlay.active {
+                display: block;
             }
-            .nav-toggle {
-                display: flex;
-            }
-            .nav-links a {
-                font-size: 28px;
-                font-weight: 600;
-                padding: 15px 30px;
-            }
-            .nav-links li {
-                opacity: 0;
-                transform: translateY(20px);
-                transition: opacity 0.3s, transform 0.3s;
-            }
-            .nav-links.active li {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            .nav-links.active li:nth-child(1) { transition-delay: 0.1s; }
-            .nav-links.active li:nth-child(2) { transition-delay: 0.15s; }
-            .nav-links.active li:nth-child(3) { transition-delay: 0.2s; }
-            .nav-links.active li:nth-child(4) { transition-delay: 0.25s; }
-            .nav-links.active li:nth-child(5) { transition-delay: 0.3s; }
             section {
                 padding: 80px 0;
             }
@@ -1394,6 +1399,7 @@
     <div class="scroll-progress" id="scrollProgress"></div>
 
     <!-- NAVBAR -->
+    <div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <a href="#" class="nav-logo">Wafi<span>.</span></a>
@@ -1771,16 +1777,20 @@
     function toggleNav() {
         const navLinks = document.getElementById('navLinks');
         const navToggle = document.querySelector('.nav-toggle');
+        const navOverlay = document.getElementById('navOverlay');
         navLinks.classList.toggle('active');
         navToggle.classList.toggle('active');
+        navOverlay.classList.toggle('active');
         document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
     }
 
     function closeNav() {
         const navLinks = document.getElementById('navLinks');
         const navToggle = document.querySelector('.nav-toggle');
+        const navOverlay = document.getElementById('navOverlay');
         navLinks.classList.remove('active');
         navToggle.classList.remove('active');
+        navOverlay.classList.remove('active');
         document.body.style.overflow = '';
     }
 
