@@ -221,18 +221,35 @@
         .nav-toggle {
             display: none;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             cursor: pointer;
             z-index: 1001;
-            padding: 5px;
+            padding: 15px;
+            margin: -15px;
+            background: transparent;
+            border: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-toggle span {
-            width: 25px;
+            width: 28px;
             height: 3px;
             background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2));
             border-radius: 2px;
             transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .nav-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .nav-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
         }
 
         /* HERO */
@@ -1271,22 +1288,45 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: var(--glass-bg);
+                background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                gap: 35px;
+                gap: 40px;
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s, visibility 0.3s;
             }
             .nav-links.active {
                 display: flex;
+                opacity: 1;
+                visibility: visible;
             }
             .nav-toggle {
                 display: flex;
             }
             .nav-links a {
-                font-size: 24px;
+                font-size: 28px;
+                font-weight: 600;
+                padding: 15px 30px;
             }
+            .nav-links li {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.3s, transform 0.3s;
+            }
+            .nav-links.active li {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .nav-links.active li:nth-child(1) { transition-delay: 0.1s; }
+            .nav-links.active li:nth-child(2) { transition-delay: 0.15s; }
+            .nav-links.active li:nth-child(3) { transition-delay: 0.2s; }
+            .nav-links.active li:nth-child(4) { transition-delay: 0.25s; }
+            .nav-links.active li:nth-child(5) { transition-delay: 0.3s; }
             section {
                 padding: 80px 0;
             }
@@ -1364,7 +1404,7 @@
                 <li><a href="#skills" onclick="closeNav()">Skills</a></li>
                 <li><a href="#contact" onclick="closeNav()">Contact</a></li>
             </ul>
-            <div class="nav-toggle" onclick="toggleNav()"><span></span><span></span><span></span></div>
+            <button class="nav-toggle" onclick="toggleNav()" aria-label="Toggle menu"><span></span><span></span><span></span></button>
         </div>
     </nav>
 
@@ -1729,11 +1769,19 @@
     });
 
     function toggleNav() {
-        document.getElementById('navLinks').classList.toggle('active');
+        const navLinks = document.getElementById('navLinks');
+        const navToggle = document.querySelector('.nav-toggle');
+        navLinks.classList.toggle('active');
+        navToggle.classList.toggle('active');
+        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
     }
 
     function closeNav() {
-        document.getElementById('navLinks').classList.remove('active');
+        const navLinks = document.getElementById('navLinks');
+        const navToggle = document.querySelector('.nav-toggle');
+        navLinks.classList.remove('active');
+        navToggle.classList.remove('active');
+        document.body.style.overflow = '';
     }
 
     // Scroll progress
