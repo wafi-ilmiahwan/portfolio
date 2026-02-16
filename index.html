@@ -934,6 +934,38 @@
             background: var(--bg-secondary);
         }
 
+        .project-filters {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            border-color: transparent;
+            color: white;
+        }
+
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -1838,6 +1870,7 @@
                 <div class="section-label">Case Studies</div>
                 <h2 class="section-title">Project <span class="highlight">Highlights</span></h2>
             </div>
+            <div class="project-filters" id="projectFilters" data-aos="fade-up"></div>
             <div class="projects-grid" id="projectsGrid"></div>
         </div>
     </section>
@@ -2032,7 +2065,54 @@
         return url;
     }
 
+    // Store projects data globally for filtering
+    let allProjectsData = [];
+
+    function renderProjectFilters(data) {
+        // Get unique categories
+        const categories = ['All'];
+        data.forEach(r => {
+            const cat = r.category || r.Category || '';
+            if (cat && !categories.includes(cat)) {
+                categories.push(cat);
+            }
+        });
+
+        // Only show filters if there's more than 1 category
+        const filtersEl = document.getElementById('projectFilters');
+        if (categories.length <= 2) {
+            filtersEl.style.display = 'none';
+            return;
+        }
+
+        filtersEl.innerHTML = categories.map((cat, i) => `
+            <button class="filter-btn ${i === 0 ? 'active' : ''}" data-category="${cat}" onclick="filterProjects('${cat}')">
+                ${cat}
+            </button>
+        `).join('');
+    }
+
+    function filterProjects(category) {
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.category === category);
+        });
+
+        // Filter and render projects
+        const filtered = category === 'All'
+            ? allProjectsData
+            : allProjectsData.filter(r => (r.category || r.Category || '') === category);
+
+        renderProjectCards(filtered);
+    }
+
     function renderProjects(data) {
+        allProjectsData = data;
+        renderProjectFilters(data);
+        renderProjectCards(data);
+    }
+
+    function renderProjectCards(data) {
         const el = document.getElementById('projectsGrid');
         el.innerHTML = data.map((r, i) => {
             let metrics = '';
