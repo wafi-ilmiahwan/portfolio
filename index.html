@@ -2042,9 +2042,12 @@
                 }
             }
 
-            // Collect all images (support: image, image 1, image 2, image 3)
+            // Collect all images (support: image, image 1 - image 10)
             let images = [];
-            const imageKeys = ['image', 'image 1', 'image 2', 'image 3', 'image1', 'image2', 'image3'];
+            const imageKeys = ['image'];
+            for (let n = 1; n <= 10; n++) {
+                imageKeys.push(`image ${n}`, `image${n}`);
+            }
             imageKeys.forEach(key => {
                 if (r[key] && r[key].trim()) {
                     const url = convertDriveUrl(r[key]);
