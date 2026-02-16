@@ -1005,6 +1005,55 @@
             font-size: 48px;
         }
 
+        /* Slideshow for multiple images */
+        .project-slider {
+            position: relative;
+        }
+
+        .project-slider .project-image {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .project-slider .project-image.active {
+            display: block;
+            position: relative;
+            opacity: 1;
+        }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .slider-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .slider-dot:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .slider-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
         .project-card-header {
             display: flex;
             justify-content: space-between;
@@ -1839,6 +1888,19 @@
         details.classList.toggle('active');
     }
 
+    // Helper: convert Google Drive share link to direct image URL
+    function convertDriveUrl(url) {
+        if (!url) return null;
+        url = url.trim();
+        // Format: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        // Already direct link or other URL
+        return url;
+    }
+
     function renderProjects(data) {
         const el = document.getElementById('projectsGrid');
         el.innerHTML = data.map((r, i) => {
@@ -1848,14 +1910,39 @@
                     metrics += `<div class="metric"><div class="metric-value">${r[`m${n}value`]}</div><div class="metric-label">${r[`m${n}label`] || ''}</div></div>`;
                 }
             }
-            // Image: tampilkan jika ada, kalau tidak ada tampilkan placeholder icon
+
+            // Collect all images (support: image, image 1, image 2, image 3)
+            let images = [];
+            const imageKeys = ['image', 'image 1', 'image 2', 'image 3', 'image1', 'image2', 'image3'];
+            imageKeys.forEach(key => {
+                if (r[key] && r[key].trim()) {
+                    const url = convertDriveUrl(r[key]);
+                    if (url) images.push(url);
+                }
+            });
+
+            // Build image HTML
             let imageHtml = '';
-            if (r.image && r.image.trim()) {
-                imageHtml = `
-                <div class="project-image-container">
-                    <img src="${r.image}" alt="${r.title}" class="project-image" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'project-image-placeholder\\'>📊</div>'">
-                </div>`;
+            if (images.length > 0) {
+                if (images.length === 1) {
+                    // Single image
+                    imageHtml = `
+                    <div class="project-image-container">
+                        <img src="${images[0]}" alt="${r.title}" class="project-image" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    </div>`;
+                } else {
+                    // Multiple images - slideshow
+                    const sliderId = 'slider-' + i;
+                    imageHtml = `
+                    <div class="project-image-container project-slider" id="${sliderId}">
+                        ${images.map((img, idx) => `<img src="${img}" alt="${r.title} ${idx+1}" class="project-image ${idx === 0 ? 'active' : ''}" loading="lazy" onerror="this.style.display='none'">`).join('')}
+                        <div class="slider-dots">
+                            ${images.map((_, idx) => `<span class="slider-dot ${idx === 0 ? 'active' : ''}" onclick="goToSlide('${sliderId}', ${idx})"></span>`).join('')}
+                        </div>
+                    </div>`;
+                }
             }
+
             return `
             <div class="project-card" data-aos="fade-up" data-aos-delay="${(i+1)*100}" data-tilt data-tilt-max="8" data-tilt-glare data-tilt-max-glare="0.15">
                 ${imageHtml}
@@ -1871,6 +1958,9 @@
         if (typeof VanillaTilt !== 'undefined') {
             VanillaTilt.init(document.querySelectorAll('[data-tilt]'), { max: 8, speed: 400, glare: true, 'max-glare': 0.15 });
         }
+
+        // Start auto slideshow
+        setTimeout(initAutoSlideshow, 500);
     }
 
     function renderSkills(data) {
@@ -2048,6 +2138,36 @@
         });
     }
     window.addEventListener('scroll', animateSkillBars);
+
+    // Slideshow functions
+    function goToSlide(sliderId, index) {
+        const slider = document.getElementById(sliderId);
+        if (!slider) return;
+
+        const images = slider.querySelectorAll('.project-image');
+        const dots = slider.querySelectorAll('.slider-dot');
+
+        images.forEach((img, i) => {
+            img.classList.toggle('active', i === index);
+        });
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+    }
+
+    // Auto slideshow
+    function initAutoSlideshow() {
+        document.querySelectorAll('.project-slider').forEach(slider => {
+            const images = slider.querySelectorAll('.project-image');
+            if (images.length <= 1) return;
+
+            let currentIndex = 0;
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % images.length;
+                goToSlide(slider.id, currentIndex);
+            }, 4000); // Change every 4 seconds
+        });
+    }
 
     // LOAD DATA!
     loadAllData();
