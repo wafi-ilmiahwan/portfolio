@@ -2025,8 +2025,8 @@
         // Format: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
         if (match) {
-            // Use lh3.googleusercontent.com format - more reliable
-            return `https://lh3.googleusercontent.com/d/${match[1]}`;
+            // Use thumbnail format with large size - most reliable
+            return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
         }
         // Already direct link or other URL
         return url;
