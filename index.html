@@ -2341,8 +2341,16 @@
     function loadRoles() {
         fetchSheet('roles').then(data => {
             if (data.length > 0) {
-                typedStrings = data.map(r => r.role || r.title || r.name).filter(r => r);
+                // Get first column value regardless of header name
+                typedStrings = data.map(r => {
+                    const keys = Object.keys(r);
+                    return keys.length > 0 ? r[keys[0]] : null;
+                }).filter(r => r && r.trim());
                 if (typedStrings.length === 0) typedStrings = ['Professional'];
+                // Reset typing to start fresh with new data
+                si = 0;
+                ci = 0;
+                del = false;
             }
         });
     }
