@@ -2251,7 +2251,7 @@
         const el = document.getElementById('achievementsContainer');
         el.innerHTML = data.map((r, i) => `
             <div class="achievement-card" data-aos="fade-up" data-aos-delay="${(i+1)*100}">
-                <h3 class="achievement-title">&#x1f3c6; ${r.title}</h3>
+                <h3 class="achievement-title">🎯 ${r.title}</h3>
                 <p class="achievement-desc">${r.description}</p>
             </div>
         `).join('');
