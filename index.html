@@ -2311,11 +2311,12 @@
     AOS.init({ duration: 800, easing: 'ease-out-cubic', once: true, offset: 80 });
 
     // Typing Effect - loaded from spreadsheet
-    let typedStrings = ['Loading...'];
-    let si = 0, ci = 0, del = false;
+    let typedStrings = [];
+    let si = 0, ci = 0, del = false, typingStarted = false;
     const to = document.getElementById('typed-output');
 
     function typeEffect() {
+        if (typedStrings.length === 0) return; // Wait for data
         const s = typedStrings[si];
         if (del) {
             to.textContent = s.substring(0, ci - 1);
@@ -2335,22 +2336,24 @@
         }
         setTimeout(typeEffect, sp);
     }
-    typeEffect();
 
-    // Load roles from spreadsheet
+    // Load roles from spreadsheet then start typing
     function loadRoles() {
         fetchSheet('roles').then(data => {
             if (data.length > 0) {
-                // Get first column value regardless of header name
                 typedStrings = data.map(r => {
                     const keys = Object.keys(r);
                     return keys.length > 0 ? r[keys[0]] : null;
                 }).filter(r => r && r.trim());
-                if (typedStrings.length === 0) typedStrings = ['Professional'];
-                // Reset typing to start fresh with new data
-                si = 0;
-                ci = 0;
-                del = false;
+            }
+            // Fallback if no data
+            if (typedStrings.length === 0) {
+                typedStrings = ['Inventory Control Specialist', 'Continuous Improvement Specialist'];
+            }
+            // Start typing after data loaded
+            if (!typingStarted) {
+                typingStarted = true;
+                typeEffect();
             }
         });
     }
