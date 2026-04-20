@@ -741,28 +741,59 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .stat-card:hover::before {
-            opacity: 1;
+        /* ABOUT QUOTE BOX */
+        .about-quote-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(240, 147, 251, 0.08));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 30px;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .stat-number {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 42px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+        .about-quote-box:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        .about-quote-icon {
+            position: absolute;
+            top: 10px;
+            left: 30px;
+            font-size: 120px;
+            font-family: Georgia, serif;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(240, 147, 251, 0.15));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             line-height: 1;
+            pointer-events: none;
         }
 
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 10px;
-            font-weight: 500;
+        .about-quote-text {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .about-quote-author {
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 1;
         }
 
         /* TIMELINE */
@@ -1846,7 +1877,11 @@
             <div class="about-grid">
                 <div class="about-text" id="aboutText" data-aos="fade-up" data-aos-delay="100"></div>
                 <div data-aos="fade-up" data-aos-delay="200">
-                    <div class="stats-row" id="statsRow"></div>
+                    <div class="about-quote-box" id="aboutQuoteBox">
+                        <div class="about-quote-icon">"</div>
+                        <p class="about-quote-text" id="aboutQuoteText">Continuous Improvement is better than delayed perfection</p>
+                        <p class="about-quote-author" id="aboutQuoteAuthor">— Wafi Ilmiahwan</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1891,8 +1926,7 @@
     <section id="achievements">
         <div class="container">
             <div class="section-header" data-aos="fade-up">
-                <div class="section-label">Recognition</div>
-                <h2 class="section-title">Key <span class="highlight">Achievements</span></h2>
+                <h2 class="section-title"><span class="highlight">Achievements</span></h2>
             </div>
             <div id="achievementsContainer"></div>
         </div>
@@ -1907,10 +1941,6 @@
             </div>
             <p style="color:var(--text-secondary);font-size:16px;margin-bottom:40px;max-width:600px;line-height:1.8" data-aos="fade-up" data-aos-delay="100" id="contactDesc">Loading...</p>
             <div class="contact-grid" id="contactGrid"></div>
-            <div class="quote-box" data-aos="fade-up" data-aos-delay="200">
-                <p class="quote-text" id="quoteText">"Continuous Improvement is better than delayed perfection"</p>
-                <p class="quote-author" id="quoteAuthor">&#x2014; Mark Twain</p>
-            </div>
         </div>
     </section>
 
@@ -1991,8 +2021,8 @@
         if (p.tagline) document.getElementById('heroDesc').textContent = p.tagline;
         if (p.photo) document.getElementById('heroPhoto').src = p.photo;
         if (p.contact_desc) document.getElementById('contactDesc').textContent = p.contact_desc;
-        if (p.quote) document.getElementById('quoteText').textContent = `"${p.quote}"`;
-        if (p.quote_author) document.getElementById('quoteAuthor').textContent = `— ${p.quote_author}`;
+        if (p.motto) document.getElementById('aboutQuoteText').textContent = p.motto;
+        if (p.motto_author) document.getElementById('aboutQuoteAuthor').textContent = `— ${p.motto_author}`;
         if (p.footer_name) document.getElementById('footerName').innerHTML = `${p.footer_name} &copy; ${new Date().getFullYear()}`;
     }
 
@@ -2245,10 +2275,9 @@
     // ===========================================================
     async function loadAllData() {
         try {
-            const [profile, about, stats, experience, projects, skills, tools, achievements, contact] = await Promise.all([
+            const [profile, about, experience, projects, skills, tools, achievements, contact] = await Promise.all([
                 fetchSheet('profile'),
                 fetchSheet('about'),
-                fetchSheet('stats'),
                 fetchSheet('experience'),
                 fetchSheet('projects'),
                 fetchSheet('skills'),
@@ -2259,7 +2288,6 @@
 
             if (profile.length) renderProfile(profile);
             if (about.length) renderAbout(about);
-            if (stats.length) renderStats(stats);
             if (experience.length) renderExperience(experience);
             if (projects.length) renderProjects(projects);
             if (skills.length) renderSkills(skills);
@@ -2282,8 +2310,8 @@
     // ===========================================================
     AOS.init({ duration: 800, easing: 'ease-out-cubic', once: true, offset: 80 });
 
-    // Typing Effect
-    const typedStrings = ['Inventory Control Specialist', 'Internal Audit Specialist', 'Continuous Improvement Specialist', 'Data-Driven Problem Solver', 'AI & Automation Enthusiast'];
+    // Typing Effect - loaded from spreadsheet
+    let typedStrings = ['Loading...'];
     let si = 0, ci = 0, del = false;
     const to = document.getElementById('typed-output');
 
@@ -2308,6 +2336,17 @@
         setTimeout(typeEffect, sp);
     }
     typeEffect();
+
+    // Load roles from spreadsheet
+    function loadRoles() {
+        fetchSheet('roles').then(data => {
+            if (data.length > 0) {
+                typedStrings = data.map(r => r.role || r.title || r.name).filter(r => r);
+                if (typedStrings.length === 0) typedStrings = ['Professional'];
+            }
+        });
+    }
+    loadRoles();
 
     // Navbar scroll
     window.addEventListener('scroll', () => {
